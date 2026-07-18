@@ -1,0 +1,8 @@
+node_modules/
+lib/
+.env
+*.log
+.firebase/
+firebase-debug.log
+.runtimeconfig.json
+service-account*.json
