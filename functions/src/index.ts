@@ -131,11 +131,11 @@ export const reconcileDaily = onSchedule(
     const deps = await buildDeps();
     if (!deps) return;
     const summary = await reconcile(deps);
-    if (summary.failures > 0) {
+    if (summary.failures > 0 || summary.schemaProblems.length > 0) {
       // Throw so the run is marked failed — this is what log-based alerting
       // and Cloud Scheduler retry policies key off.
       throw new Error(
-        `Daily reconcile finished with ${summary.failures} failure(s)`,
+        `Daily reconcile finished with ${summary.failures} failure(s), ${summary.schemaProblems.length} schema problem(s)`,
       );
     }
   },

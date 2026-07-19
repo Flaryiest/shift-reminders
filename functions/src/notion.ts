@@ -49,6 +49,22 @@ export const retrievePage = async (
   }
 };
 
+/** Property name → property type for the data source's current schema. */
+export const getDataSourcePropertyTypes = async (
+  notion: Client,
+  dataSourceId: string,
+): Promise<Record<string, string>> => {
+  const dataSource = (await notion.dataSources.retrieve({
+    data_source_id: dataSourceId,
+  })) as { properties?: Record<string, { type?: string }> };
+  return Object.fromEntries(
+    Object.entries(dataSource.properties ?? {}).map(([name, property]) => [
+      name,
+      property.type ?? "unknown",
+    ]),
+  );
+};
+
 /** Queries every page currently in the data source (paginated). */
 export const listAllDataSourcePages = async (
   notion: Client,

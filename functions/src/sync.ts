@@ -9,8 +9,12 @@ import {
   eventIdForPage,
   upsertShiftEvent,
 } from "./calendar";
-import { listAllDataSourcePages, normalizeNotionId } from "./notion";
-import { normalizePage } from "./normalize";
+import {
+  getDataSourcePropertyTypes,
+  listAllDataSourcePages,
+  normalizeNotionId,
+} from "./notion";
+import { EXPECTED_PROPERTY_TYPES, normalizePage } from "./normalize";
 import { OrganizerShift, ShiftSyncConfig } from "./types";
 
 export interface SyncDeps {
@@ -101,6 +105,8 @@ export interface ReconcileSummary {
   synced: number;
   removedOrphans: number;
   failures: number;
+  /** Template drift: expected properties missing or retyped in the data source. */
+  schemaProblems: string[];
 }
 
 /**
@@ -110,6 +116,25 @@ export interface ReconcileSummary {
  * Used for initial sync, manual recovery, and the daily consistency check.
  */
 export const reconcile = async (deps: SyncDeps): Promise<ReconcileSummary> => {
+  // Guard against template drift (renamed/retyped columns): extraction would
+  // just come up empty and quietly skip every row, so surface it loudly here.
+  const propertyTypes = await getDataSourcePropertyTypes(
+    deps.notion,
+    deps.config.notionDataSourceId,
+  );
+  const schemaProblems = Object.entries(EXPECTED_PROPERTY_TYPES)
+    .filter(([name, allowed]) => !allowed.includes(propertyTypes[name]))
+    .map(([name, allowed]) =>
+      propertyTypes[name]
+        ? `property "${name}" is ${propertyTypes[name]}, expected ${allowed.join("/")}`
+        : `property "${name}" is missing`,
+    );
+  if (schemaProblems.length > 0) {
+    logger.error("Data source schema does not match the expected template", {
+      schemaProblems,
+    });
+  }
+
   const pages = await listAllDataSourcePages(
     deps.notion,
     deps.config.notionDataSourceId,
@@ -119,6 +144,7 @@ export const reconcile = async (deps: SyncDeps): Promise<ReconcileSummary> => {
     synced: 0,
     removedOrphans: 0,
     failures: 0,
+    schemaProblems,
   };
 
   for (const page of pages) {

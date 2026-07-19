@@ -23,6 +23,22 @@ export const NOTION_PROPS = {
   description: "Notes",
 } as const;
 
+/**
+ * What each property must be for extraction to work. Renaming or retyping a
+ * column in Notion doesn't corrupt the sync — extraction just comes up empty
+ * and rows get skipped as incomplete — but reconcile checks the live schema
+ * against this so the drift is reported loudly instead of silently syncing
+ * nothing. Location/notes are lenient: any type asPlainText can read.
+ */
+export const EXPECTED_PROPERTY_TYPES: Record<string, readonly string[]> = {
+  [NOTION_PROPS.title]: ["title"],
+  [NOTION_PROPS.time]: ["date"],
+  [NOTION_PROPS.organizers]: ["people"],
+  [NOTION_PROPS.shiftLeads]: ["people"],
+  [NOTION_PROPS.location]: ["multi_select", "select", "rich_text"],
+  [NOTION_PROPS.description]: ["rich_text"],
+};
+
 type NotionProperty = PageObjectResponse["properties"][string];
 
 const asPlainText = (property: NotionProperty | undefined): string => {
