@@ -47,15 +47,28 @@ One Firestore doc: `automationConfig/notionShiftSync`
 }
 ```
 
-## Secrets (Firebase CLI — never in git)
+## Secrets (never in git)
+
+**Current (dev): plain env vars.** Copy `functions/.env.example` to
+`functions/.env` (gitignored) and fill in the values — the CLI applies them as
+environment variables at deploy. They end up in plaintext in the function
+config, which is acceptable for the dev project's test database/calendar only.
+
+**Prod: Secret Manager.** Before a production deploy, switch the code back to
+`defineSecret` (revert the "Read secrets from env" commit) and store each value
+with `firebase functions:secrets:set <NAME>`. This requires the deployer's
+account to hold Secret Manager Admin on the project, and the functions runtime
+service account needs `roles/secretmanager.secretAccessor`:
 
 ```bash
-firebase functions:secrets:set NOTION_API_TOKEN
-firebase functions:secrets:set NOTION_WEBHOOK_VERIFICATION_TOKEN
-firebase functions:secrets:set GOOGLE_OAUTH_CLIENT_ID
-firebase functions:secrets:set GOOGLE_OAUTH_CLIENT_SECRET
-firebase functions:secrets:set GOOGLE_OAUTH_REFRESH_TOKEN
+gcloud projects add-iam-policy-binding <project> \
+  --member=serviceAccount:<project-number>-compute@developer.gserviceaccount.com \
+  --role=roles/secretmanager.secretAccessor
 ```
+
+Secret names in both schemes: `NOTION_API_TOKEN`,
+`NOTION_WEBHOOK_VERIFICATION_TOKEN`, `GOOGLE_OAUTH_CLIENT_ID`,
+`GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REFRESH_TOKEN`.
 
 ### Getting the Google OAuth refresh token (one-time)
 
