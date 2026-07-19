@@ -5,6 +5,7 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 
 import { makeCalendarClient } from "./calendar";
 import { getSyncConfig } from "./config";
+import { requireEnv } from "./env";
 import {
   makeNotionClient,
   retrievePage,
@@ -19,11 +20,6 @@ initializeApp();
 // account Secret Manager access needs project-admin rights we don't have in
 // dev. Values are only read inside handlers so deploy-time analysis of this
 // module never throws.
-const requireEnv = (name: string): string => {
-  const value = process.env[name];
-  if (!value) throw new Error(`Missing environment variable: ${name}`);
-  return value;
-};
 
 /** Null when the sync is disabled or unconfigured. */
 const buildDeps = async (): Promise<SyncDeps | null> => {
