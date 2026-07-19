@@ -96,13 +96,13 @@ the template before each event.** Current expectations:
 
 | Property | Type | Notes |
 | --- | --- | --- |
-| `Name` | title | required |
-| `Time` | date | must have start **and** end |
-| `Organizers` | people | at least one person across Organizers/Shift Lead |
-| `Shift Lead` | people | optional |
-| `Location` | select or rich text | optional |
-| `Description` | rich text | optional |
-| volunteers multi-select | — | deliberately ignored |
+| `Event` | title | required |
+| `Date/Time` | date | must have start **and** end |
+| `Organizers` | people | at least one person across Organizers/Lead |
+| `Lead` | people | optional |
+| `Location` | multi-select | optional |
+| `Notes` | rich text | optional; becomes the reminder/invite description |
+| `Volunteers`, `Audience`, `Category`, `Announcement`, `Announcer`, `Social IG Story Person` | — | deliberately ignored |
 
 Rows missing a title, valid start/end, or any assigned organizer are treated
 as incomplete drafts and skipped. If a previously-synced shift *becomes*

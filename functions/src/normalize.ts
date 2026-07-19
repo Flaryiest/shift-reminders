@@ -10,17 +10,17 @@ import { OrganizerShift } from "./types";
  * deliberately never read: volunteers get neither invites nor pings.
  */
 export const NOTION_PROPS = {
-  title: "Name",
+  title: "Event",
   /** Date property carrying both start and end. */
-  time: "Time",
+  time: "Date/Time",
   /** Person property. */
   organizers: "Organizers",
   /** Person property. */
-  shiftLeads: "Shift Lead",
-  /** Select or rich-text. */
+  shiftLeads: "Lead",
+  /** Multi-select. */
   location: "Location",
-  /** Rich-text. */
-  description: "Description",
+  /** Rich-text — the internal organizer notes become the description. */
+  description: "Notes",
 } as const;
 
 type NotionProperty = PageObjectResponse["properties"][string];
@@ -34,6 +34,8 @@ const asPlainText = (property: NotionProperty | undefined): string => {
       return property.rich_text.map((t) => t.plain_text).join("");
     case "select":
       return property.select?.name ?? "";
+    case "multi_select":
+      return property.multi_select.map((option) => option.name).join(", ");
     default:
       return "";
   }
